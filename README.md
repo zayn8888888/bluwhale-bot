@@ -1,54 +1,68 @@
-[English](README.md) | [中文](README_zh.md)
+[中文](README.md) | [English](README_en.md)
 
-# 🌊 Bluwhale Auto Check-in Script
-## 📌 Features
-Automates daily check-in process for Bluwhale platform with multi-account support and proxy rotation.
+# 🌊 Bluwhale 自动签到脚本
+## 📌 功能简介
+支持多账号自动签到、代理轮换和失败重试的自动化脚本。
 
-## 🚀 Get Required Tokens
-### 1️⃣ Register Account
-👉 [Sign Up](https://profile.bluwhale.com/login?referral=7da0a708-9050-4573-9989-3a051e776164)
+## 🚀 获取登录凭证
+### 1️⃣ 注册账号
+👉 [注册链接](https://profile.bluwhale.com/login?referral=7da0a708-9050-4573-9989-3a051e776164)
 
-### 2️⃣ Retrieve Token
-1. Open browser console (`F12` > Console)
-2. Execute this code:
+### 2️⃣ 获取Token
+1. 打开浏览器控制台 (`F12` > 控制台)
+2. 执行代码：
 ```js
    const obj=JSON.parse(sessionStorage.getItem('firebaseUser'))
    console.log(obj.displayName+'***'+obj.auth.apiKey+'***'+obj.stsTokenManager.refreshToken+'***'+obj.stsTokenManager.accessToken)
 ```
-3. Save tokens in `tokens.txt` (one per line)
+3. 将Token保存至`tokens.txt`（每行一个）
 
-## 🌍 Proxy Configuration
-Add proxies in `proxy.txt` with format:
+## 🌍 代理配置
+在`proxy.txt`中添加代理，格式：
 ```
 host:port:username:password
 ```
-⚠️ Script will reuse last proxy if insufficient.
+⚠️ 代理不足时将重复使用最后一个
 
-## 🛠️ Usage
-### 📥 Install Dependencies
+## 🛠️ 使用指南
+### 📥 安装依赖
 ```sh
 npm install
 ```
 
-### ▶️ Run Script
+### ▶️ 运行脚本
 ```sh
 npm run start
 ```
 
-### 🔄 Background Run (PM2)
+### 🔄 后台运行 (PM2)
 ```sh
 npm install -g pm2
-pm2 start npm --name "bluwhale" -- run start --log log/output.log
+pm2 start index --name "bluwhale"  --output log/output.log --error log/error.log
+
+```
+日志查询
+```sh
+pm2 logs bluwhale
+```
+或者
+```shell
+cd log
+tail -f output.log
+```
+terminal
+```sh
+pm2 stop bluwhale
+pm2 delete bluwhale
 ```
 
-## 📌 Notes
-- Multi-account: Add multiple tokens in `tokens.txt`
-- Auto-retry: 3 retries on failure
-- Proxy rotation supported
+## 📌 注意事项
+- 多账号：在`tokens.txt`中添加多个Token
+- 自动重试：失败时重试3次
+- 支持代理轮换
 
-💡 **Recommend updating script regularly for new features!**
+💡 **建议定期更新脚本以获取新功能！**
 
 ---
-✨ **Enjoy effortless check-ins with Bluwhale!** 🌊
-
+✨ 让Bluwhale签到变得轻松简单！🌊
 

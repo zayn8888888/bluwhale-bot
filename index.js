@@ -11,6 +11,10 @@ const tokens = fs
   .filter((item) => item)
   .map((item) => {
     const arr = item.split("***");
+    if (!arr[0] || !arr[1] || !arr[2] || !arr[3]) {
+      console.error("token格式错误");
+      return {};
+    }
     return {
       name: arr[0].trim(),
       key: arr[1].trim(),
@@ -110,7 +114,7 @@ async function refreshTokenFn(tokenObj, proxy) {
         headers,
       },
     );
-    console.log("新 Token:", response.data); // 打印返回的新 token
+    console.log(new Date().toLocaleString(), "新 Token:", response.data); // 打印返回的新 token
     refreshTokenFs(response.data, tokenObj);
   } catch (error) {
     console.error(
@@ -145,6 +149,7 @@ async function signInWithTokenAndProxy(tokenObj, proxy) {
     const response = await axiosInstance.post("", data);
     if (response.status === 200) {
       console.log(
+        new Date().toLocaleString(),
         `签到成功，${tokenObj.name}  返回 ${JSON.stringify(response.data)}`,
       );
     } else {
@@ -157,10 +162,13 @@ async function signInWithTokenAndProxy(tokenObj, proxy) {
     );
     if (error.response?.status === 401) {
       // 刷新token
-      console.log(`token: ${tokenObj.name}  失效，尝试刷新token`);
+      console.log(
+        new Date().toLocaleString(),
+        `token: ${tokenObj.name}  失效，尝试刷新token`,
+      );
       await refreshTokenFn(tokenObj, proxy);
     } else {
-      console.log(error);
+      console.log(new Date().toLocaleString(), error);
     }
 
     return false;
@@ -169,7 +177,10 @@ async function signInWithTokenAndProxy(tokenObj, proxy) {
 
 async function attemptSignIn(tokenObj, proxy, attempts = 1) {
   if (attempts > maxRetries) {
-    console.log(`达到最大重试次数，跳过当前  ${tokenObj.name}，代理: ${proxy}`);
+    console.log(
+      new Date().toLocaleString(),
+      `达到最大重试次数，跳过当前  ${tokenObj.name}，代理: ${proxy}`,
+    );
     return;
   }
 
@@ -181,13 +192,16 @@ async function attemptSignIn(tokenObj, proxy, attempts = 1) {
   // 等待1秒再重试
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  console.log(`重试第 ${attempts} 次，当前: ${tokenObj.name}，代理: ${proxy}`);
+  console.log(
+    new Date().toLocaleString(),
+    `重试第 ${attempts} 次，当前: ${tokenObj.name}，代理: ${proxy}`,
+  );
   await attemptSignIn(tokenObj, proxy, attempts + 1);
 }
 
 async function runSignIn() {
   if (!tokens.length) {
-    console.log("请先输入token");
+    console.log(new Date().toLocaleString(), "请先输入token");
     // 退出程序
     process.exit(0);
     return;
@@ -195,13 +209,19 @@ async function runSignIn() {
   tokens.forEach((tokenObj, index) => {
     // 如果代理为空，则不适用代理
     if (!proxies.length) {
-      console.log(`开始签到，使用: ${tokenObj.name} `);
+      console.log(
+        new Date().toLocaleString(),
+        `开始签到，使用: ${tokenObj.name} `,
+      );
       attemptSignIn(tokenObj, "");
     }
     // 如果代理不够用，则使用最后一个代理
     const proxy =
       proxies[index >= proxies.length ? proxies.length - 1 : index].trim();
-    console.log(`开始签到，使用: ${tokenObj.name} 和代理: ${proxy}`);
+    console.log(
+      new Date().toLocaleString(),
+      `开始签到，使用: ${tokenObj.name} 和代理: ${proxy}`,
+    );
     attemptSignIn(tokenObj, proxy);
   });
 }
