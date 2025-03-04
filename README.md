@@ -38,7 +38,7 @@ npm run start
 ### 🔄 后台运行 (PM2)
 ```sh
 npm install -g pm2
-pm2 start index --name "bluwhale"  --output log/output.log --error log/error.log
+pm2 start index.js --name "bluwhale"  --output log/output.log --error log/error.log
 
 ```
 日志查询
