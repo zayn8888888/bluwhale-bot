@@ -50,7 +50,7 @@ const asyncToken = () => {
     "tokens.txt",
     tokens
       .map((item) => {
-        return `${item.key}***${item.refresh_token}***${item.token}`;
+        return `${item.name}***${item.key}***${item.refresh_token}***${item.token}`;
       })
       .join("\n"),
     "utf-8"
