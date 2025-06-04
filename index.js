@@ -53,7 +53,7 @@ const asyncToken = () => {
         return `${item.key}***${item.refresh_token}***${item.token}`;
       })
       .join("\n"),
-    "utf-8",
+    "utf-8"
   );
 };
 
@@ -100,7 +100,7 @@ async function refreshTokenFn(tokenObj, proxy) {
     const [host, port, username, password] = proxy.split(":");
     if (host && port) {
       const agent = new SocksProxyAgent(
-        `socks5://${username}:${password}@${host}:${port}`,
+        `socks5://${username}:${password}@${host}:${port}`
       );
       axiosInstance.defaults.httpsAgent = agent;
       axiosInstance.defaults.httpAgent = agent;
@@ -112,14 +112,14 @@ async function refreshTokenFn(tokenObj, proxy) {
       requestBody,
       {
         headers,
-      },
+      }
     );
     console.log(new Date().toLocaleString(), "新 Token:", response.data); // 打印返回的新 token
     refreshTokenFs(response.data, tokenObj);
   } catch (error) {
     console.error(
       "刷新 Token 失败:",
-      error.response ? error.response.data : error.message,
+      error.response ? error.response.data : error.message
     );
   }
 }
@@ -136,7 +136,7 @@ async function signInWithTokenAndProxy(tokenObj, proxy) {
     const [host, port, username, password] = proxy.split(":");
     if (host && port) {
       const agent = new SocksProxyAgent(
-        `socks5://${username}:${password}@${host}:${port}`,
+        `socks5://${username}:${password}@${host}:${port}`
       );
       axiosInstance.defaults.httpsAgent = agent;
       axiosInstance.defaults.httpAgent = agent;
@@ -150,7 +150,7 @@ async function signInWithTokenAndProxy(tokenObj, proxy) {
     if (response.status === 200) {
       console.log(
         new Date().toLocaleString(),
-        `签到成功，${tokenObj.name}  返回 ${JSON.stringify(response.data)}`,
+        `签到成功，${tokenObj.name}  返回 ${JSON.stringify(response.data)}`
       );
     } else {
       throw new Error(`签到失败，状态码: ${response.status}`);
@@ -158,13 +158,13 @@ async function signInWithTokenAndProxy(tokenObj, proxy) {
     return true;
   } catch (error) {
     console.error(
-      `签到失败，错误信息: ${(error.response?.data && JSON.stringify(error.response.data)) || error.message}`,
+      `签到失败，错误信息: ${(error.response?.data && JSON.stringify(error.response.data)) || error.message}`
     );
     if (error.response?.status === 401) {
       // 刷新token
       console.log(
         new Date().toLocaleString(),
-        `token: ${tokenObj.name}  失效，尝试刷新token`,
+        `token: ${tokenObj.name}  失效，尝试刷新token`
       );
       await refreshTokenFn(tokenObj, proxy);
     } else {
@@ -179,7 +179,7 @@ async function attemptSignIn(tokenObj, proxy, attempts = 1) {
   if (attempts > maxRetries) {
     console.log(
       new Date().toLocaleString(),
-      `达到最大重试次数，跳过当前  ${tokenObj.name}，代理: ${proxy}`,
+      `达到最大重试次数，跳过当前  ${tokenObj.name}，代理: ${proxy}`
     );
     return;
   }
@@ -194,7 +194,7 @@ async function attemptSignIn(tokenObj, proxy, attempts = 1) {
 
   console.log(
     new Date().toLocaleString(),
-    `重试第 ${attempts} 次，当前: ${tokenObj.name}，代理: ${proxy}`,
+    `重试第 ${attempts} 次，当前: ${tokenObj.name}，代理: ${proxy}`
   );
   await attemptSignIn(tokenObj, proxy, attempts + 1);
 }
@@ -206,31 +206,44 @@ async function runSignIn() {
     process.exit(0);
     return;
   }
-  tokens.forEach((tokenObj, index) => {
-    // 如果代理为空，则不适用代理
-    if (!proxies.length) {
+  for (let i = 0; i < tokens.length; i++) {
+    try {
+      const tokenObj = tokens[i];
+      // 如果代理为空，则不适用代理
+      if (!proxies.length) {
+        console.log(
+          new Date().toLocaleString(),
+          `开始签到，使用: ${tokenObj.name} `
+        );
+        await attemptSignIn(tokenObj, "");
+      }
+      // 如果代理不够用，则使用最后一个代理
+      const proxy =
+        proxies[index >= proxies.length ? proxies.length - 1 : index].trim();
       console.log(
         new Date().toLocaleString(),
-        `开始签到，使用: ${tokenObj.name} `,
+        `开始签到，使用: ${tokenObj.name} 和代理: ${proxy}`
       );
-      attemptSignIn(tokenObj, "");
+      await attemptSignIn(tokenObj, proxy);
+    } catch (e) {
+      console.error(e);
     }
-    // 如果代理不够用，则使用最后一个代理
-    const proxy =
-      proxies[index >= proxies.length ? proxies.length - 1 : index].trim();
+    // 随机等待1~3分钟
+    const randomTime = Math.floor(Math.random() * 180 + 60);
     console.log(
       new Date().toLocaleString(),
-      `开始签到，使用: ${tokenObj.name} 和代理: ${proxy}`,
+      `等待${randomTime / 60}分钟后继续下一个`
     );
-    attemptSignIn(tokenObj, proxy);
-  });
+    await new Promise((resolve) => setTimeout(resolve, randomTime * 1000));
+  }
+  // 随机12-14小时候后再次运行
+  const randomTime = Math.floor(Math.random() * 3600 * 2 + 3600 * 12);
+  console.log(
+    new Date().toLocaleString(),
+    `签到任务已结束，${randomTime}分钟后将再次运行`
+  );
+  setTimeout(runSignIn, randomTime * 1000);
 }
 
 // 每天定时运行签到
 runSignIn();
-setInterval(
-  () => {
-    runSignIn();
-  },
-  12 * 60 * 60 * 1000,
-); // 每12小时运行一次
