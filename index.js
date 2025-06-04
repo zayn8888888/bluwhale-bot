@@ -206,9 +206,9 @@ async function runSignIn() {
     process.exit(0);
     return;
   }
-  for (let i = 0; i < tokens.length; i++) {
+  for (let index = 0; index < tokens.length; i++) {
     try {
-      const tokenObj = tokens[i];
+      const tokenObj = tokens[index];
       // 如果代理为空，则不适用代理
       if (!proxies.length) {
         console.log(
